@@ -1,3 +1,5 @@
+// Linear algebra library
+
 #ifndef LINEARALG_H_INCLUDED
 #define LINEARALG_H_INCLUDED
 

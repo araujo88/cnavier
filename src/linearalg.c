@@ -92,11 +92,11 @@ void printm(mtrx A)
         {
             if (j == A.n - 1)
             {
-                printf(" %.2lf ", A.M[i][j]);
+                printf(" %.4lf ", A.M[i][j]);
             }
             else
             {
-                printf(" %.2lf", A.M[i][j]);
+                printf(" %.4lf", A.M[i][j]);
             }
         }
         if (i == A.n - 1)
@@ -174,11 +174,11 @@ void printv(vec v)
     {
         if ((i == 0) || (i == (v.n - 1)))
         {
-            printf("%.2lf", v.v[i]);
+            printf("%.4lf", v.v[i]);
         }
         else
         {
-            printf(" %.2lf ", v.v[i]);
+            printf(" %.4lf ", v.v[i]);
         }
     }
     printf(" ]\n");
