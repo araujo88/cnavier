@@ -29,7 +29,8 @@ void printv(vec v);                             // Print vector;
 mtrx mtrxmul(mtrx A, mtrx B, int *m, int *n);   // Matrix multiplication
 vec gaussian(mtrx A, vec b);                    // Gaussian elimination
 mtrx kronecker(mtrx A, mtrx B);                 // Kronecker matrix product
-mtrx reshape(mtrx A, int m, int n);             // reshape matrix
-mtrx eye(int n);                                // generates identiy matrix
+mtrx reshape(mtrx A, int m, int n);             // Reshape matrix
+mtrx eye(int n);                                // Generates identiy matrix
+mtrx initm(int m, int n);                       // Allocates memory and return matrix
 
 #endif // LINEARALG_H_INCLUDED

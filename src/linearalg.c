@@ -363,3 +363,12 @@ mtrx eye(int n)
     }
     return A;
 }
+
+mtrx initm(int m, int n)
+{
+    mtrx A;
+    A.M = allocm(m, n);
+    A.m = m;
+    A.n = n;
+    return A;
+}
