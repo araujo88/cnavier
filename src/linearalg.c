@@ -312,9 +312,7 @@ mtrx reshape(mtrx A, int m, int n)
         exit(1);
     }
 
-    B.M = allocm(m, n);
-    B.m = m;
-    B.n = n;
+    B = initm(m, n);
 
     k = 0;
     l = 0;

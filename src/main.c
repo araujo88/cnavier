@@ -15,15 +15,15 @@ int main(int argc, char *argv[])
     int i, j, t;
 
     // Physical parameters
-    double Re = 5000.; // Reynolds number
-    int Lx = 1;        // length
-    int Ly = 1;        // width
+    double Re = 100.; // Reynolds number
+    int Lx = 1;       // length
+    int Ly = 1;       // width
 
     // Numerical parameters
     int nx = 32;                // number of points in x direction
     int ny = 32;                // number of points in y direction
     double dt = 0.005;          // time step
-    double tf = 60;             // final time
+    double tf = 0.5;            // final time
     double max_co = 1.;         // max Courant number
     int order = 6;              // finite difference order for spatial derivatives
     int poisson_max_it = 10000; // Poisson equation max number of iterations
@@ -116,6 +116,8 @@ int main(int argc, char *argv[])
     mtrx u0;
     mtrx v0;
     mtrx dudx0;
+    mtrx dudy0;
+    mtrx dvdx0;
     mtrx dvdy0;
 
     // Initial condition
@@ -149,8 +151,18 @@ int main(int argc, char *argv[])
             u.M[i][ny - 1] = u2;
         }
 
-        dudy = reshape(mtrxmul(DY, reshape(u, nx * ny, 1)), nx, ny);
-        dvdx = reshape(mtrxmul(DX, reshape(v, nx * ny, 1)), nx, ny);
+        u0 = reshape(u, nx * ny, 1);
+        v0 = reshape(v, nx * ny, 1);
+        dudy0 = mtrxmul(DY, u0);
+        dvdx0 = mtrxmul(DX, v0);
+
+        dudy = reshape(dudy0, nx, ny);
+        dvdx = reshape(dvdx0, nx, ny);
+
+        u0.M = freem(u0);
+        v0.M = freem(v0);
+        dudy0.M = freem(dudy0);
+        dvdx0.M = freem(dvdx0);
 
         for (j = 0; j < ny; j++)
         {
@@ -214,8 +226,10 @@ int main(int argc, char *argv[])
         mtrxcpy(v, dpsidx);
 
         // Checks continuity equation
+
         u0 = reshape(u, nx * ny, 1);
         v0 = reshape(v, nx * ny, 1);
+
         dudx0 = mtrxmul(DX, u0);
         dvdy0 = mtrxmul(DY, v0);
 
