@@ -58,6 +58,7 @@ double **freem(mtrx A)
     for (i = 0; i < A.n; i++)
         free(A.M[i]);
     free(A.M);
+    //printf("Liberated successfully\n");
     return (NULL);
 }
 
@@ -417,4 +418,17 @@ double minel(mtrx A)
         }
     }
     return min_element;
+}
+
+void mtrxcpy(mtrx A, mtrx B)
+{
+    int i, j;
+
+    for (i = 0; i < A.m; i++)
+    {
+        for (j = 0; j < A.n; j++)
+        {
+            A.M[i][j] = B.M[i][j];
+        }
+    }
 }

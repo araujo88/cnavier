@@ -10,7 +10,7 @@ double randdouble(double min, double max)
     return min + (rand() / div);
 }
 
-void printvtk(mtrx A)
+void printvtk(mtrx A, char *title)
 {
     int i, j;
     char c[320];
@@ -28,7 +28,7 @@ void printvtk(mtrx A)
         exit(1);
     }
 
-    sprintf(name, "./output/test-1-%d.vtk", count);
+    sprintf(name, "./output/%s-1-%d.vtk", title, count);
     FILE *pf;
 
     if ((pf = fopen(name, "a")) == NULL)
@@ -37,7 +37,7 @@ void printvtk(mtrx A)
         exit(1);
     }
 
-    printf("\n%s", name);
+    printf("%s\n", name);
 
     fprintf(pf, "# vtk DataFile Version 2.0\n"); // vtk file headers
     fprintf(pf, "test\n");

@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <omp.h>
 #include <time.h>
 #include "linearalg.h"
 #include "finitediff.h"
@@ -16,35 +15,37 @@ int main(int argc, char *argv[])
     int i, j, t;
 
     // Physical parameters
-    int Re = 100; // Reynolds number
-    int Lx = 1;   // length
-    int Ly = 1;   // width
+    double Re = 100.; // Reynolds number
+    int Lx = 1;       // length
+    int Ly = 1;       // width
 
     // Numerical parameters
-    int nx = 20;       // number of points in x direction
-    int ny = 20;       // number of points in y direction
-    double dt = 0.02;  // time step
-    double tf = 10;    // final time
-    double max_co = 1; // max Courant number
-    int order = 2;     // finite difference order for spatial derivatives
+    int nx = 32;                // number of points in x direction
+    int ny = 32;                // number of points in y direction
+    double dt = 0.005;          // time step
+    double tf = 10;             // final time
+    double max_co = 1.;         // max Courant number
+    int order = 6;              // finite difference order for spatial derivatives
+    int poisson_max_it = 10000; // Poisson equation max number of iterations
+    double poisson_tol = 1E-6;  // Poisson equation criterion for convergence
 
     // Boundary conditions (Dirichlet)
-    double u0 = 0; // internal field for u
-    double v0 = 0; // internal field for v
+    double u0 = 0.; // internal field for u
+    double v0 = 0.; // internal field for v
 
-    double u1 = 0; // bottom boundary condition
-    double u2 = 1; // top boundary condition
-    double u3 = 0; // right boundary condition
-    double u4 = 0; // left boundary condition
+    double u1 = 0.; // right boundary condition
+    double u2 = 0.; // left boundary condition
+    double u3 = 0.; // bottom boundary condition
+    double u4 = 1.; // top boundary condition
 
-    double v1 = 0;
-    double v2 = 0;
-    double v3 = 0;
-    double v4 = 0;
+    double v1 = 0.;
+    double v2 = 0.;
+    double v3 = 0.;
+    double v4 = 0.;
 
     // Computes cell sizes
-    double dx = Lx / nx;
-    double dy = Ly / ny;
+    double dx = (double)Lx / nx;
+    double dy = (double)Ly / ny;
 
     // Generates derivatives operators
     mtrx d_x = Diff1(nx, order, dx);
@@ -54,10 +55,10 @@ int main(int argc, char *argv[])
 
     mtrx Ix = eye(nx);              // identity matrix
     mtrx Iy = eye(ny);              // identity matrix
-    mtrx DX = kronecker(d_x, Ix);   // kronecker product for x first derivative
-    mtrx DY = kronecker(Iy, d_y);   // kronecker product for y first derivative
-    mtrx DX2 = kronecker(d_x2, Ix); // kronecker product for x second derivative
-    mtrx DY2 = kronecker(Iy, d_y2); // kronecker product for y second derivative
+    mtrx DX = kronecker(Ix, d_x);   // kronecker product for x first derivative
+    mtrx DY = kronecker(d_y, Iy);   // kronecker product for y first derivative
+    mtrx DX2 = kronecker(Ix, d_x2); // kronecker product for x second derivative
+    mtrx DY2 = kronecker(d_y2, Iy); // kronecker product for y second derivative
 
     // Maximum number of iterations
     int it_max = (int)((tf / dt) - 1);
@@ -97,10 +98,8 @@ int main(int argc, char *argv[])
 
     mtrx check_continuity = initm(nx, ny);
 
-    printvtk(w);
-
     // Initial condition
-    for (i = 0; i < nx - 1; i++)
+    for (i = 1; i < nx - 1; i++)
     {
         for (j = 1; j < ny - 1; j++)
         {
@@ -110,26 +109,28 @@ int main(int argc, char *argv[])
     }
 
     // Main time loop
-    for (t = 0; t < it_max; t++)
+    for (t = 0; t <= it_max; t++)
     {
         // Boundary conditions
         for (j = 0; j < ny; j++)
         {
-            u.M[0][j] = u3;
-            u.M[nx - 1][j] = u4;
             v.M[0][j] = v3;
             v.M[nx - 1][j] = v4;
+            u.M[0][j] = u3;
+            u.M[nx - 1][j] = u4;
         }
         for (i = 0; i < nx; i++)
         {
-            u.M[i][0] = u1;
-            u.M[i][ny - 1] = u2;
             v.M[i][0] = v1;
             v.M[i][ny - 1] = v2;
+            u.M[i][0] = u1;
+            u.M[i][ny - 1] = u2;
         }
 
         dudy = reshape(mtrxmul(DY, reshape(u, nx * ny, 1)), nx, ny);
         dvdx = reshape(mtrxmul(DX, reshape(v, nx * ny, 1)), nx, ny);
+
+        //w = vorticity(dudy, dvdx);
 
         for (j = 0; j < ny; j++)
         {
@@ -138,35 +139,56 @@ int main(int argc, char *argv[])
         }
         for (i = 0; i < nx; i++)
         {
-            w.M[i][0] = dvdx.M[i, 0] - dudy.M[i, 0];
+            w.M[i][0] = dvdx.M[i][0] - dudy.M[i][0];
             w.M[i][ny - 1] = dvdx.M[i][ny - 1] - dudy.M[i][ny - 1];
         }
 
         // Computes derivatives
-        dwdx = reshape(mtrxmul(DX, reshape(w, nx * ny, 1)), nx, ny);
-        dwdy = reshape(mtrxmul(DY, reshape(w, nx * ny, 1)), nx, ny);
-        d2wdx2 = reshape(mtrxmul(DX2, reshape(w, nx * ny, 1)), nx, ny);
-        d2wdy2 = reshape(mtrxmul(DY2, reshape(w, nx * ny, 1)), nx, ny);
+        mtrx temp;
+        temp = initm(nx * ny, 1);
+        temp = reshape(w, nx * ny, 1);
+
+        dwdx = mtrxmul(DX, temp);
+        dwdx = reshape(dwdx, nx, ny);
+
+        dwdy = mtrxmul(DY, temp);
+        dwdy = reshape(dwdy, nx, ny);
+
+        d2wdx2 = mtrxmul(DX2, temp);
+        d2wdx2 = reshape(d2wdx2, nx, ny);
+
+        d2wdy2 = mtrxmul(DY2, temp);
+        d2wdy2 = reshape(d2wdy2, nx, ny);
+        freem(temp);
 
         // Time - advancement(Euler)
-        w = euler(w, dwdx, dwdy, d2wdx2, d2wdy2, u, v, Re, dt);
+        euler(w, dwdx, dwdy, d2wdx2, d2wdy2, u, v, Re, dt);
 
         // Solves poisson equation for stream function
-        psi = poisson(invsig(w), dx, dy, 100, 0.001);
+        psi = poisson(invsig(w), dx, dy, poisson_max_it, poisson_tol);
 
         // Computes velocities
-        dpsidx = reshape(mtrxmul(DX, reshape(psi, nx * ny, 1)), nx, ny);
-        dpsidy = reshape(mtrxmul(DY, reshape(psi, nx * ny, 1)), nx, ny);
-        u = dpsidy;
-        v = invsig(dpsidx);
+        mtrx temp2;
+        temp2 = initm(nx, ny);
+        temp2 = reshape(psi, nx * ny, 1);
+
+        dpsidx = mtrxmul(DX, temp2);
+        dpsidx = reshape(dpsidx, nx, ny);
+        dpsidy = mtrxmul(DY, temp2);
+        dpsidy = reshape(dpsidy, nx, ny);
+
+        freem(temp2);
+
+        mtrxcpy(u, dpsidy);
+        mtrxcpy(v, invsig(dpsidx));
 
         // Checks continuity equation
         dudx = reshape(mtrxmul(DX, reshape(u, nx * ny, 1)), nx, ny);
         dvdy = reshape(mtrxmul(DY, reshape(v, nx * ny, 1)), nx, ny);
         check_continuity = continuity(dudx, dvdy);
         printf("Iteration: %d\n", t);
-        printf("Continuity max: %lf\n", maxel(check_continuity));
-        printf("Continuity min: %lf\n", minel(check_continuity));
+        printf("Continuity max: %E\n", maxel(check_continuity));
+        printf("Continuity min: %E\n", minel(check_continuity));
 
         // Computes pressure
         //	dudx = np.reshape(DX @ np.reshape(u,(nx*ny,1)),(nx,ny))
@@ -178,13 +200,41 @@ int main(int argc, char *argv[])
 
         if (t % output_interval == 0)
         {
-            printvtk(w);
-            // printvtk(psi);
-            // printvtk(u);
-            // printvtk(v);
-            // printvtk(p);
+            printvtk(psi, "stream-function");
+            // printvtk(w, "vorticity");
+            // printvtk(u, "x-velocity");
+            // printvtk(v, "y-velocity");
+            // printvtk(p, "pressure");
         }
     }
+
+    // Free memory
+    freem(d_x);
+    freem(d_y);
+    freem(d_x2);
+    freem(d_y2);
+    freem(Ix);
+    freem(Iy);
+    freem(DX);
+    freem(DY);
+    freem(DX2);
+    freem(DY2);
+    freem(u);
+    freem(v);
+    freem(w);
+    freem(psi);
+    freem(p);
+    freem(dwdx);
+    freem(dwdy);
+    freem(d2wdx2);
+    freem(d2wdy2);
+    freem(dpsidx);
+    freem(dpsidy);
+    freem(dudx);
+    freem(dudy);
+    freem(dvdx);
+    freem(dvdy);
+    freem(check_continuity);
 
     return 0;
 }

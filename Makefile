@@ -1,5 +1,5 @@
 CC=gcc
-CC_FLAGS=-g -Wall -fopenmp
+CC_FLAGS=-g -Wall
 CC_LIBS=-lm
 
 SRC_DIR=src

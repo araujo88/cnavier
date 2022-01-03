@@ -14,13 +14,13 @@ mtrx Diff1(int n, int o, double dx)
 
     if (o == 2) // second order
     {
-        D.M[0][0] = (double)-1;
-        D.M[0][1] = (double)1;
+        D.M[0][0] = -1. / dx;
+        D.M[0][1] = 1. / dx;
         for (i = 1; i < (n - 1); i++)
         {
-            D.M[i][i - 1] = (double)-0.5;
-            D.M[i][i] = (double)0;
-            D.M[i][i + 1] = (double)0.5;
+            D.M[i][i - 1] = -0.5 / dx;
+            D.M[i][i] = 0. / dx;
+            D.M[i][i + 1] = 0.5 / dx;
         }
         D.M[n - 1][n - 1] = D.M[0][1];
         D.M[n - 1][n - 2] = D.M[0][0];
@@ -100,15 +100,15 @@ mtrx Diff2(int n, int o, double dx)
 
     if (o == 2) // Second-order
     {
-        D.M[0][0] = (double)2 / (dx * dx); // Forward scheme (second-order)
-        D.M[0][1] = (double)-5 / (dx * dx);
-        D.M[0][2] = (double)4 / (dx * dx);
-        D.M[0][3] = (double)-1 / (dx * dx);
+        D.M[0][0] = 2. / (dx * dx); // Forward scheme (second-order)
+        D.M[0][1] = -5. / (dx * dx);
+        D.M[0][2] = 4. / (dx * dx);
+        D.M[0][3] = -1. / (dx * dx);
         for (i = 1; i < (n - 1); i++)
         {
-            D.M[i][i - 1] = (double)1 / (dx * dx);
-            D.M[i][i] = (double)-2 / (dx * dx);
-            D.M[i][i + 1] = (double)1 / (dx * dx);
+            D.M[i][i - 1] = 1. / (dx * dx);
+            D.M[i][i] = -2. / (dx * dx);
+            D.M[i][i + 1] = 1. / (dx * dx);
         }
         D.M[n - 1][n - 1] = D.M[0][0];
         D.M[n - 1][n - 2] = D.M[0][1];

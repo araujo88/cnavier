@@ -35,5 +35,6 @@ mtrx initm(int m, int n);                       // Allocates memory and return m
 mtrx invsig(mtrx A);                            // Inverts signal of all matrix elements
 double maxel(mtrx A);                           // Returns max element from matrix
 double minel(mtrx A);                           // Returns min element from matrix
+void mtrxcpy(mtrx A, mtrx B);                   // Copy matrix B into A
 
 #endif // LINEARALG_H_INCLUDED
