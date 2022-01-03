@@ -26,11 +26,14 @@ double *allocv(int n);                          // Allocate vector with size n
 double *freev(vec v);                           // Free memory for vector
 double *readv(char *filename, int *n);          // Read vector
 void printv(vec v);                             // Print vector;
-mtrx mtrxmul(mtrx A, mtrx B, int *m, int *n);   // Matrix multiplication
+mtrx mtrxmul(mtrx A, mtrx B);                   // Matrix multiplication
 vec gaussian(mtrx A, vec b);                    // Gaussian elimination
 mtrx kronecker(mtrx A, mtrx B);                 // Kronecker matrix product
 mtrx reshape(mtrx A, int m, int n);             // Reshape matrix
 mtrx eye(int n);                                // Generates identiy matrix
 mtrx initm(int m, int n);                       // Allocates memory and return matrix
+mtrx invsig(mtrx A);                            // Inverts signal of all matrix elements
+double maxel(mtrx A);                           // Returns max element from matrix
+double minel(mtrx A);                           // Returns min element from matrix
 
 #endif // LINEARALG_H_INCLUDED

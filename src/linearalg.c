@@ -184,7 +184,7 @@ void printv(vec v)
     printf(" ]\n");
 }
 
-mtrx mtrxmul(mtrx A, mtrx B, int *m, int *n)
+mtrx mtrxmul(mtrx A, mtrx B)
 {
     mtrx C;
     int i, j, k;
@@ -197,17 +197,11 @@ mtrx mtrxmul(mtrx A, mtrx B, int *m, int *n)
         exit(1);
     }
 
-    *m = A.m;
-    *n = B.n;
-    C.m = *m;
-    C.n = *n;
-    C.M = allocm(*m, *n);
+    C = initm(A.m, B.n);
 
-    printf("Number of elements of matrix C: %d x %d\n", *m, *n);
-
-    for (i = 0; i < *m; i++)
+    for (i = 0; i < C.m; i++)
     {
-        for (j = 0; j < *n; j++)
+        for (j = 0; j < C.n; j++)
         {
             C.M[i][j] = 0;
             for (k = 0; k < B.m; k++)
@@ -371,4 +365,56 @@ mtrx initm(int m, int n)
     A.m = m;
     A.n = n;
     return A;
+}
+
+mtrx invsig(mtrx A)
+{
+    int i, j;
+    mtrx temp;
+    temp = initm(A.m, A.n);
+
+    for (i = 0; i < A.m; i++)
+    {
+        for (j = 0; j < A.n; j++)
+        {
+            temp.M[i][j] = -A.M[i][j];
+        }
+    }
+    return temp;
+}
+
+double maxel(mtrx A)
+{
+    int i, j;
+    double max_element = -__DBL_MAX__;
+
+    for (i = 0; i < A.m; i++)
+    {
+        for (j = 0; j < A.n; j++)
+        {
+            if (A.M[i][j] > max_element)
+            {
+                max_element = A.M[i][j];
+            }
+        }
+    }
+    return max_element;
+}
+
+double minel(mtrx A)
+{
+    int i, j;
+    double min_element = __DBL_MAX__;
+
+    for (i = 0; i < A.m; i++)
+    {
+        for (j = 0; j < A.n; j++)
+        {
+            if (A.M[i][j] < min_element)
+            {
+                min_element = A.M[i][j];
+            }
+        }
+    }
+    return min_element;
 }

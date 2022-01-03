@@ -8,6 +8,7 @@
 #include "finitediff.h"
 #include "utils.h"
 #include "poisson.h"
+#include "fluiddyn.h"
 
 int main(int argc, char *argv[])
 {
@@ -60,6 +61,7 @@ int main(int argc, char *argv[])
 
     // Maximum number of iterations
     int it_max = (int)((tf / dt) - 1);
+    int output_interval = 10;
 
     // Courant numbers
     double r1 = u1 * dt / (dx);
@@ -93,7 +95,9 @@ int main(int argc, char *argv[])
     mtrx dvdx = initm(nx, ny); // y-velocity x-derivative
     mtrx dvdy = initm(nx, ny); // y-velocity y-derivative
 
-    mtrx continuity = initm(nx, ny);
+    mtrx check_continuity = initm(nx, ny);
+
+    printvtk(w);
 
     // Initial condition
     for (i = 0; i < nx - 1; i++)
@@ -105,7 +109,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Main time - loop
+    // Main time loop
     for (t = 0; t < it_max; t++)
     {
         // Boundary conditions
@@ -124,45 +128,45 @@ int main(int argc, char *argv[])
             v.M[i][ny - 1] = v2;
         }
 
-        dudy = reshape(mtrxmul(DY, reshape(u, (nx * ny, 1)), (nx, ny)));
-        dvdx = reshape(mtrxmul(DX, reshape(v, (nx * ny, 1)), (nx, ny)));
+        dudy = reshape(mtrxmul(DY, reshape(u, nx * ny, 1)), nx, ny);
+        dvdx = reshape(mtrxmul(DX, reshape(v, nx * ny, 1)), nx, ny);
 
         for (j = 0; j < ny; j++)
         {
-            w[0, j] = dvdx[0, j] - dudy[0, j];
-            w[nx - 1, j] = dvdx[nx - 1, j] - dudy[nx - 1, j];
+            w.M[0][j] = dvdx.M[0][j] - dudy.M[0][j];
+            w.M[nx - 1][j] = dvdx.M[nx - 1][j] - dudy.M[nx - 1][j];
         }
         for (i = 0; i < nx; i++)
         {
-            w[i, 0] = dvdx[i, 0] - dudy[i, 0];
-            w[i, ny - 1] = dvdx[i, ny - 1] - dudy[i, ny - 1];
+            w.M[i][0] = dvdx.M[i, 0] - dudy.M[i, 0];
+            w.M[i][ny - 1] = dvdx.M[i][ny - 1] - dudy.M[i][ny - 1];
         }
-        psi = poisson(-w, dx);
 
         // Computes derivatives
-        dwdx = np.reshape(DX @np.reshape(w, (nx * ny, 1)), (nx, ny));
-        dwdy = np.reshape(DY @np.reshape(w, (nx * ny, 1)), (nx, ny));
-        d2wdx2 = np.reshape(DX2 @np.reshape(w, (nx * ny, 1)), (nx, ny));
-        d2wdy2 = np.reshape(DY2 @np.reshape(w, (nx * ny, 1)), (nx, ny));
+        dwdx = reshape(mtrxmul(DX, reshape(w, nx * ny, 1)), nx, ny);
+        dwdy = reshape(mtrxmul(DY, reshape(w, nx * ny, 1)), nx, ny);
+        d2wdx2 = reshape(mtrxmul(DX2, reshape(w, nx * ny, 1)), nx, ny);
+        d2wdy2 = reshape(mtrxmul(DY2, reshape(w, nx * ny, 1)), nx, ny);
 
         // Time - advancement(Euler)
-        w = (-u * dwdx - v * dwdy + (1 / Re) * (d2wdx2 + d2wdy2)) * dt + w;
+        w = euler(w, dwdx, dwdy, d2wdx2, d2wdy2, u, v, Re, dt);
 
         // Solves poisson equation for stream function
-        psi = poisson(-w, dx);
+        psi = poisson(invsig(w), dx, dy, 100, 0.001);
 
         // Computes velocities
-        dpsidx = np.reshape(DX @np.reshape(psi, (nx * ny, 1)), (nx, ny));
-        dpsidy = np.reshape(DY @np.reshape(psi, (nx * ny, 1)), (nx, ny));
+        dpsidx = reshape(mtrxmul(DX, reshape(psi, nx * ny, 1)), nx, ny);
+        dpsidy = reshape(mtrxmul(DY, reshape(psi, nx * ny, 1)), nx, ny);
         u = dpsidy;
-        v = -dpsidx;
+        v = invsig(dpsidx);
 
         // Checks continuity equation
-        dudx = np.reshape(DX @np.reshape(u, (nx * ny, 1)), (nx, ny));
-        dvdy = np.reshape(DY @np.reshape(v, (nx * ny, 1)), (nx, ny));
-        continuity = dudx + dvdy;
-        print('Iteration: ' + str(t));
-        print('Continuity max: ' + str(continuity.max()) + ' Continuity min: ' + str(continuity.min()));
+        dudx = reshape(mtrxmul(DX, reshape(u, nx * ny, 1)), nx, ny);
+        dvdy = reshape(mtrxmul(DY, reshape(v, nx * ny, 1)), nx, ny);
+        check_continuity = continuity(dudx, dvdy);
+        printf("Iteration: %d\n", t);
+        printf("Continuity max: %lf\n", maxel(check_continuity));
+        printf("Continuity min: %lf\n", minel(check_continuity));
 
         // Computes pressure
         //	dudx = np.reshape(DX @ np.reshape(u,(nx*ny,1)),(nx,ny))
@@ -171,6 +175,15 @@ int main(int argc, char *argv[])
         //	dvdy = np.reshape(DY @ np.reshape(v,(nx*ny,1)),(nx,ny))
         //	f = dudx**2+dvdy**2+2*dudy*dvdx
         //	p = fft_poisson(-f,dx)
+
+        if (t % output_interval == 0)
+        {
+            printvtk(w);
+            // printvtk(psi);
+            // printvtk(u);
+            // printvtk(v);
+            // printvtk(p);
+        }
     }
 
     return 0;
