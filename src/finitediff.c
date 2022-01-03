@@ -8,9 +8,7 @@ mtrx Diff1(int n, int o, double dx)
 {
     int i;
     mtrx D;
-    D.M = allocm(n, n);
-    D.m = n;
-    D.n = n;
+    D = initm(n, n);
 
     if (o == 2) // second order
     {
@@ -93,10 +91,7 @@ mtrx Diff1(int n, int o, double dx)
 mtrx Diff2(int n, int o, double dx)
 {
     int i;
-    mtrx D;
-    D.M = allocm(n, n);
-    D.m = n;
-    D.n = n;
+    mtrx D = initm(n, n);
 
     if (o == 2) // Second-order
     {

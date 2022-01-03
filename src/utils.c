@@ -16,6 +16,7 @@ void printvtk(mtrx A, char *title)
     char c[320];
     static int count = 0;
     char name[64];
+    FILE *pf;
 
     if (A.M == NULL)
     {
@@ -29,7 +30,6 @@ void printvtk(mtrx A, char *title)
     }
 
     sprintf(name, "./output/%s-1-%d.vtk", title, count);
-    FILE *pf;
 
     if ((pf = fopen(name, "a")) == NULL)
     {

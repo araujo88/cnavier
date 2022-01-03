@@ -32,7 +32,7 @@ mtrx kronecker(mtrx A, mtrx B);                 // Kronecker matrix product
 mtrx reshape(mtrx A, int m, int n);             // Reshape matrix
 mtrx eye(int n);                                // Generates identiy matrix
 mtrx initm(int m, int n);                       // Allocates memory and return matrix
-mtrx invsig(mtrx A);                            // Inverts signal of all matrix elements
+void invsig(mtrx A);                            // Inverts signal of all matrix elements
 double maxel(mtrx A);                           // Returns max element from matrix
 double minel(mtrx A);                           // Returns min element from matrix
 void mtrxcpy(mtrx A, mtrx B);                   // Copy matrix B into A

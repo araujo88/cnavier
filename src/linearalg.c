@@ -25,7 +25,7 @@ double **allocm(int m, int n)
         exit(1);
     }
 
-    A = (double **)calloc(m, sizeof(double *));
+    A = (double **)malloc(m * sizeof(double *));
 
     if (A == NULL)
     {
@@ -35,7 +35,7 @@ double **allocm(int m, int n)
 
     for (i = 0; i < m; i++)
     {
-        A[i] = (double *)calloc(n, sizeof(double));
+        A[i] = (double *)malloc(n * sizeof(double));
         if (A[i] == NULL)
         {
             printf("** Error: insufficient memory **");
@@ -55,7 +55,7 @@ double **freem(mtrx A)
         printf("** Error: invalid parameter **\n");
         exit(1);
     }
-    for (i = 0; i < A.n; i++)
+    for (i = 0; i < A.m; i++)
         free(A.M[i]);
     free(A.M);
     //printf("Liberated successfully\n");
@@ -129,7 +129,7 @@ double *allocv(int n)
         printf("** Error: invalid parameter **\n");
         exit(1);
     }
-    v = (double *)calloc(n, sizeof(double));
+    v = (double *)malloc(n * sizeof(double));
     if (v == NULL)
     {
         printf("** Error: insufficient memory **");
@@ -365,23 +365,20 @@ mtrx initm(int m, int n)
     A.M = allocm(m, n);
     A.m = m;
     A.n = n;
+    zerosm(A);
     return A;
 }
 
-mtrx invsig(mtrx A)
+void invsig(mtrx A)
 {
     int i, j;
-    mtrx temp;
-    temp = initm(A.m, A.n);
-
     for (i = 0; i < A.m; i++)
     {
         for (j = 0; j < A.n; j++)
         {
-            temp.M[i][j] = -A.M[i][j];
+            A.M[i][j] = -A.M[i][j];
         }
     }
-    return temp;
 }
 
 double maxel(mtrx A)
