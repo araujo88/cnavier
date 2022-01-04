@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     int nx = 64;                // number of points in x direction
     int ny = 64;                // number of points in y direction
     double dt = 0.004;          // time step
-    double tf = 60;             // final time
+    double tf = 30;             // final time
     double max_co = 1.;         // max Courant number
     int order = 6;              // finite difference order for spatial derivatives
     int poisson_max_it = 10000; // Poisson equation max number of iterations

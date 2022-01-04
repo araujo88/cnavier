@@ -6,6 +6,6 @@
 #include "linearalg.h"
 
 mtrx Diff1(int n, int o, double dx); // Computes finite-difference matrices for the first derivative
-mtrx Diff2(int n, int o, double dx); // Computes finite - difference matrices for the second derivative
+mtrx Diff2(int n, int o, double dx); // Computes finite-difference matrices for the second derivative
 
 #endif // FINITEDIFF_H_INCLUDED
