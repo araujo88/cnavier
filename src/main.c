@@ -15,15 +15,15 @@ int main(int argc, char *argv[])
     int i, j, t;
 
     // Physical parameters
-    double Re = 100.; // Reynolds number
-    int Lx = 1;       // length
-    int Ly = 1;       // width
+    double Re = 1000.; // Reynolds number
+    int Lx = 1;        // length
+    int Ly = 1;        // width
 
     // Numerical parameters
-    int nx = 32;                // number of points in x direction
-    int ny = 32;                // number of points in y direction
-    double dt = 0.005;          // time step
-    double tf = 0.5;            // final time
+    int nx = 64;                // number of points in x direction
+    int ny = 64;                // number of points in y direction
+    double dt = 0.004;          // time step
+    double tf = 60;             // final time
     double max_co = 1.;         // max Courant number
     int order = 6;              // finite difference order for spatial derivatives
     int poisson_max_it = 10000; // Poisson equation max number of iterations
@@ -236,8 +236,10 @@ int main(int argc, char *argv[])
         dudx = reshape(dudx0, nx, ny);
         dvdy = reshape(dvdy0, nx, ny);
         check_continuity = continuity(dudx, dvdy);
-        printf("Iteration: %d\n", t);
-        printf("Continuity max: %E\n", maxel(check_continuity));
+        printf("Iteration: %d | ", t);
+        printf("Time: %lf | ", (double)t * dt);
+        printf("Progress: %.2lf%%\n", (double)100 * t / it_max);
+        printf("Continuity max: %E | ", maxel(check_continuity));
         printf("Continuity min: %E\n", minel(check_continuity));
 
         u0.M = freem(u0);
@@ -255,8 +257,8 @@ int main(int argc, char *argv[])
 
         if (t % output_interval == 0)
         {
-            printvtk(psi, "stream-function");
-            // printvtk(w, "vorticity");
+            //printvtk(psi, "stream-function");
+            printvtk(w, "vorticity");
             // printvtk(u, "x-velocity");
             // printvtk(v, "y-velocity");
             // printvtk(p, "pressure");
