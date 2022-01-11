@@ -29,7 +29,7 @@ void printvtk(mtrx A, char *title)
         exit(1);
     }
 
-    sprintf(name, "./output/%s-1-%d.vtk", title, count);
+    snprintf(name, sizeof(name), "./output/%s-1-%d.vtk", title, count);
 
     if ((pf = fopen(name, "a")) == NULL)
     {
