@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     // Numerical parameters
     int nx = 64;                                                                       // number of points in x direction
     int ny = 64;                                                                       // number of points in y direction
-    double dt = 0.008;                                                                 // time step
+    double dt = 0.005;                                                                 // time step
     double tf = 20;                                                                    // final time
     double max_co = 1.;                                                                // max Courant number
     int order = 6;                                                                     // finite difference order for spatial derivatives
@@ -31,6 +31,8 @@ int main(int argc, char *argv[])
     int output_interval = 10;                                                          // Output interval for .vtk files
     int poisson_type = 2;                                                              // 1 - no relaxation | 2 - successive overrelaxation
     double beta = 0.5 * (2 / (1 + sin(PI / (nx + 1))) + 2 / (1 + sin(PI / (ny + 1)))); // SOR poisson parameter
+
+    printf("Poisson SOR parameter: %lf\n", beta);
 
     // Boundary conditions (Dirichlet)
     double ui = 0.; // internal field for u
@@ -272,7 +274,7 @@ int main(int argc, char *argv[])
 
         if (t % output_interval == 0)
         {
-            //printvtk(psi, "stream-function");
+            // printvtk(psi, "stream-function");
             printvtk(w, "vorticity");
             // printvtk(u, "x-velocity");
             // printvtk(v, "y-velocity");
@@ -302,6 +304,8 @@ int main(int argc, char *argv[])
     DY.M = freem(DY);
     DX2.M = freem(DX2);
     DY2.M = freem(DY2);
+
+    printf("Simulation complete!\n");
 
     return 0;
 }
