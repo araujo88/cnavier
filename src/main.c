@@ -20,14 +20,17 @@ int main(int argc, char *argv[])
     int Ly = 1;        // width
 
     // Numerical parameters
-    int nx = 64;                // number of points in x direction
-    int ny = 64;                // number of points in y direction
-    double dt = 0.004;          // time step
-    double tf = 30;             // final time
-    double max_co = 1.;         // max Courant number
-    int order = 6;              // finite difference order for spatial derivatives
-    int poisson_max_it = 10000; // Poisson equation max number of iterations
-    double poisson_tol = 1E-9;  // Poisson equation criterion for convergence
+    int nx = 64;                                                                       // number of points in x direction
+    int ny = 64;                                                                       // number of points in y direction
+    double dt = 0.008;                                                                 // time step
+    double tf = 20;                                                                    // final time
+    double max_co = 1.;                                                                // max Courant number
+    int order = 6;                                                                     // finite difference order for spatial derivatives
+    int poisson_max_it = 10000;                                                        // Poisson equation max number of iterations
+    double poisson_tol = 1E-3;                                                         // Poisson equation criterion for convergence
+    int output_interval = 10;                                                          // Output interval for .vtk files
+    int poisson_type = 2;                                                              // 1 - no relaxation | 2 - successive overrelaxation
+    double beta = 0.5 * (2 / (1 + sin(PI / (nx + 1))) + 2 / (1 + sin(PI / (ny + 1)))); // SOR poisson parameter
 
     // Boundary conditions (Dirichlet)
     double ui = 0.; // internal field for u
@@ -69,7 +72,6 @@ int main(int argc, char *argv[])
 
     // Maximum number of iterations
     int it_max = (int)((tf / dt) - 1);
-    int output_interval = 10;
 
     // Courant numbers
     double r1 = u1 * dt / (dx);
@@ -202,7 +204,20 @@ int main(int argc, char *argv[])
         // Solves poisson equation for stream function
         psi.M = freem(psi);
         invsig(w);
-        psi = poisson(w, dx, dy, poisson_max_it, poisson_tol);
+        if (poisson_type == 1)
+        {
+            psi = poisson(w, dx, dy, poisson_max_it, poisson_tol);
+        }
+        else if (poisson_type == 2)
+        {
+            psi = poisson_SOR(w, dx, dy, poisson_max_it, poisson_tol, beta);
+        }
+        else
+        {
+            printf("Error - invalid option for Poisson solver\n");
+            exit(1);
+        }
+
         invsig(w);
 
         // Computes velocities
